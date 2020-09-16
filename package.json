@@ -24,6 +24,8 @@
     "dependencies": {
         "@aws-cdk/core": "1.63.0",
         "@aws-cdk/aws-rds": "1.63.0",
-        "@aws-cdk/aws-ec2": "1.63.0"
+        "@aws-cdk/aws-ec2": "1.63.0",
+        "@aws-cdk/aws-lambda": "1.63.0",
+        "path": "0.12.7"
     }
 }
