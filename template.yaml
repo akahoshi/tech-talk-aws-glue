@@ -14,13 +14,10 @@ Resources:
   VpcPublicSubnetSubnet1SubnetC1C3749F:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: 10.0.0.0/17
+      CidrBlock: 10.0.0.0/18
       VpcId:
         Ref: Vpc8378EB38
-      AvailabilityZone:
-        Fn::Select:
-          - 0
-          - Fn::GetAZs: ""
+      AvailabilityZone: us-east-1a
       MapPublicIpOnLaunch: true
       Tags:
         - Key: aws-cdk:subnet-name
@@ -62,16 +59,61 @@ Resources:
       - VpcVPCGWBF912B6E
     Metadata:
       aws:cdk:path: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet1/DefaultRoute
+  VpcPublicSubnetSubnet2Subnet2294BBD1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.64.0/18
+      VpcId:
+        Ref: Vpc8378EB38
+      AvailabilityZone: us-east-1b
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: PublicSubnet
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2/Subnet
+  VpcPublicSubnetSubnet2RouteTableC47A3F8E:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc8378EB38
+      Tags:
+        - Key: Name
+          Value: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2/RouteTable
+  VpcPublicSubnetSubnet2RouteTableAssociation4749FF4D:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VpcPublicSubnetSubnet2RouteTableC47A3F8E
+      SubnetId:
+        Ref: VpcPublicSubnetSubnet2Subnet2294BBD1
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2/RouteTableAssociation
+  VpcPublicSubnetSubnet2DefaultRoute27ACE0CE:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VpcPublicSubnetSubnet2RouteTableC47A3F8E
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VpcIGWD7BA715C
+    DependsOn:
+      - VpcVPCGWBF912B6E
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/PublicSubnetSubnet2/DefaultRoute
   VpcDBSubnetSubnet1Subnet7B6AC578:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: 10.0.128.0/17
+      CidrBlock: 10.0.128.0/18
       VpcId:
         Ref: Vpc8378EB38
-      AvailabilityZone:
-        Fn::Select:
-          - 0
-          - Fn::GetAZs: ""
+      AvailabilityZone: us-east-1a
       MapPublicIpOnLaunch: false
       Tags:
         - Key: aws-cdk:subnet-name
@@ -101,6 +143,42 @@ Resources:
         Ref: VpcDBSubnetSubnet1Subnet7B6AC578
     Metadata:
       aws:cdk:path: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet1/RouteTableAssociation
+  VpcDBSubnetSubnet2SubnetDF71D60C:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.192.0/18
+      VpcId:
+        Ref: Vpc8378EB38
+      AvailabilityZone: us-east-1b
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: DBSubnet
+        - Key: aws-cdk:subnet-type
+          Value: Isolated
+        - Key: Name
+          Value: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet2
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet2/Subnet
+  VpcDBSubnetSubnet2RouteTableD671A162:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc8378EB38
+      Tags:
+        - Key: Name
+          Value: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet2
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet2/RouteTable
+  VpcDBSubnetSubnet2RouteTableAssociation64AE103E:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VpcDBSubnetSubnet2RouteTableD671A162
+      SubnetId:
+        Ref: VpcDBSubnetSubnet2SubnetDF71D60C
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/Vpc/DBSubnetSubnet2/RouteTableAssociation
   VpcIGWD7BA715C:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -118,12 +196,110 @@ Resources:
         Ref: VpcIGWD7BA715C
     Metadata:
       aws:cdk:path: TechTalkAwsGlueStack/Vpc/VPCGW
+  BastionHostInstanceSecurityGroupE75D4274:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: TechTalkAwsGlueStack/BastionHost/Resource/InstanceSecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: SSH access
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      Tags:
+        - Key: Name
+          Value: BastionHost
+      VpcId:
+        Ref: Vpc8378EB38
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/BastionHost/Resource/InstanceSecurityGroup/Resource
+  BastionHostInstanceRoleDD3FA5F1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+        Version: "2012-10-17"
+      Tags:
+        - Key: Name
+          Value: BastionHost
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/BastionHost/Resource/InstanceRole/Resource
+  BastionHostInstanceRoleDefaultPolicy17347525:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ssmmessages:*
+              - ssm:UpdateInstanceInformation
+              - ec2messages:*
+            Effect: Allow
+            Resource: "*"
+          - Action: rds-db:connect
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:"
+                  - Ref: AWS::Partition
+                  - ":rds:us-east-1:672447805310:db:"
+                  - Ref: MySqlDbCD296E0A
+        Version: "2012-10-17"
+      PolicyName: BastionHostInstanceRoleDefaultPolicy17347525
+      Roles:
+        - Ref: BastionHostInstanceRoleDD3FA5F1
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/BastionHost/Resource/InstanceRole/DefaultPolicy/Resource
+  BastionHostInstanceProfile770FCA07:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: BastionHostInstanceRoleDD3FA5F1
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/BastionHost/Resource/InstanceProfile
+  BastionHost30F9ED05:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1a
+      IamInstanceProfile:
+        Ref: BastionHostInstanceProfile770FCA07
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - BastionHostInstanceSecurityGroupE75D4274
+            - GroupId
+      SubnetId:
+        Ref: VpcPublicSubnetSubnet1SubnetC1C3749F
+      Tags:
+        - Key: Name
+          Value: BastionHost
+      UserData:
+        Fn::Base64: >-
+          #!/bin/bash
+
+          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+    DependsOn:
+      - BastionHostInstanceRoleDefaultPolicy17347525
+      - BastionHostInstanceRoleDD3FA5F1
+    Metadata:
+      aws:cdk:path: TechTalkAwsGlueStack/BastionHost/Resource/Resource
   MySqlDbSubnetGroup82C9BDE4:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: Subnet group for MySqlDb database
       SubnetIds:
         - Ref: VpcDBSubnetSubnet1Subnet7B6AC578
+        - Ref: VpcDBSubnetSubnet2SubnetDF71D60C
     Metadata:
       aws:cdk:path: TechTalkAwsGlueStack/MySqlDb/SubnetGroup
   MySqlDbSecurityGroup1F731F85:
@@ -173,7 +349,9 @@ Resources:
       DBName: shop
       DBSubnetGroupName:
         Ref: MySqlDbSubnetGroup82C9BDE4
-      DeletionProtection: true
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+      EnableIAMDatabaseAuthentication: true
       Engine: mysql
       EngineVersion: "8.0"
       MasterUsername:
@@ -201,4 +379,13 @@ Resources:
     Type: AWS::CDK::Metadata
     Properties:
       Modules: aws-cdk=1.63.0,@aws-cdk/assets=1.63.0,@aws-cdk/aws-applicationautoscaling=1.63.0,@aws-cdk/aws-autoscaling-common=1.63.0,@aws-cdk/aws-cloudwatch=1.63.0,@aws-cdk/aws-codeguruprofiler=1.63.0,@aws-cdk/aws-ec2=1.63.0,@aws-cdk/aws-events=1.63.0,@aws-cdk/aws-iam=1.63.0,@aws-cdk/aws-kms=1.63.0,@aws-cdk/aws-lambda=1.63.0,@aws-cdk/aws-logs=1.63.0,@aws-cdk/aws-rds=1.63.0,@aws-cdk/aws-s3=1.63.0,@aws-cdk/aws-s3-assets=1.63.0,@aws-cdk/aws-sam=1.63.0,@aws-cdk/aws-secretsmanager=1.63.0,@aws-cdk/aws-sqs=1.63.0,@aws-cdk/aws-ssm=1.63.0,@aws-cdk/cloud-assembly-schema=1.63.0,@aws-cdk/core=1.63.0,@aws-cdk/cx-api=1.63.0,@aws-cdk/region-info=1.63.0,jsii-runtime=node.js/v10.15.3
+Outputs:
+  BastionHostBastionHostIdC743CBD6:
+    Description: Instance ID of the bastion host. Use this to connect via SSM Session Manager
+    Value:
+      Ref: BastionHost30F9ED05
+Parameters:
+  SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
