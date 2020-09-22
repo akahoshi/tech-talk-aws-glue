@@ -7,8 +7,13 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         super(scope, id, props);
 
         const vpc = this.createVpc();
+
         const bastionHost = this.createBastionHost(vpc);
-        const mySqlDb = this.createDbInstance(vpc);
+
+        const dbSecurityGroup = this.createDbSecurityGroup(vpc);
+        dbSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(3306));
+
+        const mySqlDb = this.createDbInstance(vpc, dbSecurityGroup);
         mySqlDb.grantConnect(bastionHost);
     }
 
@@ -25,9 +30,15 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         })
     }
 
-    private createDbInstance(vpc: ec2.IVpc): rds.IDatabaseInstance {
-        const id: string = 'MySqlDb';
-        return new rds.DatabaseInstance(this, id, {
+    private createDbSecurityGroup(vpc: ec2.IVpc): ec2.ISecurityGroup {
+        return new ec2.SecurityGroup(this, 'DbSecurityGroup', {
+            vpc: vpc,
+            allowAllOutbound: false
+        });
+    }
+
+    private createDbInstance(vpc: ec2.IVpc, securityGroup: ec2.ISecurityGroup): rds.IDatabaseInstance {
+        const dbInstance = new rds.DatabaseInstance(this, 'MySqlDb', {
             engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
             instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
             masterUsername: 'master',
@@ -37,12 +48,13 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             vpc: vpc,
             allocatedStorage: 20,
             storageType: rds.StorageType.GP2,
-            instanceIdentifier: id,
             databaseName: 'shop',
             deleteAutomatedBackups: true,
             deletionProtection: false,
-            iamAuthentication: true
+            iamAuthentication: true,
+            securityGroups: [securityGroup]
         });
+        return dbInstance;
     }
 
     private createBastionHost(vpc: ec2.IVpc): ec2.IInstance {
