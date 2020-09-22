@@ -103,7 +103,7 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
             managedPolicies: [
                 iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
-                iam.ManagedPolicy.fromAwsManagedPolicyName('AWSGlueServiceRole')
+                iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole')
             ]
         })
 
