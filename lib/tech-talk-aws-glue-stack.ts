@@ -138,8 +138,9 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             },
             glueVersion: '2.0',
             maxRetries: 0,
-            numberOfWorkers: 1,
+            numberOfWorkers: 2,
             workerType: 'Standard',
+            timeout: 5,
             defaultArguments: {
                 '--enable-metrics': '',
                 '--enable-continuous-cloudwatch-log': '',
