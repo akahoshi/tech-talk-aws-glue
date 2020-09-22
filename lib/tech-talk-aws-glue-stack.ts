@@ -23,8 +23,9 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         mySqlDb.grantConnect(bastionHost);
 
         const itemsS3Bucket = this.createItemsS3Bucket();
+        const codeS3Bucket = this.createCodeS3Bucket();
 
-        this.setupGlue(itemsS3Bucket);
+        this.setupGlue(itemsS3Bucket, codeS3Bucket);
     }
 
     private createVpc(): ec2.IVpc {
@@ -94,7 +95,20 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         return s3Bucket;
     }
 
-    private setupGlue(itemsS3Bucket: s3.IBucket) {
+    private createCodeS3Bucket(): s3.IBucket {
+        const s3Bucket = new s3.Bucket(this, 'CodeS3Bucket', {
+            bucketName: `${StackConfiguration.bucketNamePrefix}.code`
+        });
+        new s3_deployment.BucketDeployment(this, 'CodeUpload', {
+            destinationBucket: s3Bucket,
+            sources: [
+                s3_deployment.Source.asset('src')
+            ]
+        })
+        return s3Bucket;
+    }
+
+    private setupGlue(itemsS3Bucket: s3.IBucket, codeS3Bucket: s3.IBucket) {
         const dataCatalogDb = new glue.Database(this, 'DataCatalogDb', {
             databaseName: 'data_catalog'
         });
@@ -114,5 +128,25 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             },
             role: glueRole.roleArn
         });
+
+        const itemsUploadEtlJob = new glue.CfnJob(this, 'ItemsUploadJob', {
+            role: glueRole.roleArn,
+            command: {
+                name: 'glueetl',
+                pythonVersion: '3',
+                scriptLocation: codeS3Bucket.s3UrlForObject('etl/items-upload.py')
+            },
+            glueVersion: '2.0',
+            maxRetries: 0,
+            numberOfWorkers: 1,
+            workerType: 'Standard',
+            defaultArguments: {
+                '--enable-metrics': '',
+                '--enable-continuous-cloudwatch-log': '',
+                '--enable-continuous-log-filter': 'true',
+                '--database_name': dataCatalogDb.databaseName,
+                '--table_name': 'tech_talk_aws_glue_items'
+            }
+        })
     }
 }
