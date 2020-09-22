@@ -142,11 +142,12 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             workerType: 'Standard',
             timeout: 5,
             defaultArguments: {
-                '--enable-metrics': '',
-                '--enable-continuous-cloudwatch-log': '',
+                '--enable-metrics': 'true',
+                '--enable-continuous-cloudwatch-log': 'true',
                 '--enable-continuous-log-filter': 'true',
                 '--database_name': dataCatalogDb.databaseName,
-                '--table_name': 'tech_talk_aws_glue_items'
+                '--table_name': 'tech_talk_aws_glue_items',
+                '--TempDir': codeS3Bucket.s3UrlForObject('tmp')
             }
         })
     }
