@@ -109,7 +109,7 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         const itemsS3BucketCrawler = new glue.CfnCrawler(this, 'ItemsBucketCrawler', {
             databaseName: dataCatalogDb.databaseName,
             targets: {
-                s3Targets: [{ path: itemsS3Bucket.s3UrlForObject(itemsS3Bucket.bucketName) }]
+                s3Targets: [{ path: itemsS3Bucket.s3UrlForObject() }]
             },
             role: glueRole.roleArn
         });
