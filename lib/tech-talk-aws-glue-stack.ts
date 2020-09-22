@@ -1,4 +1,6 @@
 import * as ec2 from '@aws-cdk/aws-ec2';
+import * as glue from '@aws-cdk/aws-glue';
+import * as iam from '@aws-cdk/aws-iam';
 import * as rds from '@aws-cdk/aws-rds';
 import * as s3 from '@aws-cdk/aws-s3';
 import * as s3_deployment from '@aws-cdk/aws-s3-deployment';
@@ -21,6 +23,8 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         mySqlDb.grantConnect(bastionHost);
 
         const itemsS3Bucket = this.createItemsS3Bucket();
+
+        this.setupGlue(itemsS3Bucket);
     }
 
     private createVpc(): ec2.IVpc {
@@ -88,5 +92,26 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             ]
         })
         return s3Bucket;
+    }
+
+    private setupGlue(itemsS3Bucket: s3.IBucket) {
+        const dataCatalogDb = new glue.Database(this, 'DataCatalogDb', {
+            databaseName: 'data_catalog'
+        });
+
+        const glueRole = new iam.Role(this, 'GlueRole', {
+            assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
+            managedPolicies: [
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess')
+            ]
+        })
+
+        const itemsS3BucketCrawler = new glue.CfnCrawler(this, 'ItemsBucketCrawler', {
+            databaseName: dataCatalogDb.databaseName,
+            targets: {
+                s3Targets: [{ path: itemsS3Bucket.s3UrlForObject(itemsS3Bucket.bucketName) }]
+            },
+            role: glueRole.roleArn
+        });
     }
 }
