@@ -63,7 +63,9 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             deleteAutomatedBackups: true,
             deletionProtection: false,
             iamAuthentication: true,
-            securityGroups: [securityGroup]
+            securityGroups: [securityGroup],
+            backupRetention: cdk.Duration.days(0),
+            removalPolicy: cdk.RemovalPolicy.DESTROY
         });
         return dbInstance;
     }
