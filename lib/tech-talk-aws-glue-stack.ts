@@ -84,7 +84,8 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
 
     private createItemsS3Bucket(): s3.IBucket {
         const s3Bucket = new s3.Bucket(this, 'ItemsS3Bucket', {
-            bucketName: `${StackConfiguration.bucketNamePrefix}.items`
+            bucketName: `${StackConfiguration.bucketNamePrefix}.items`,
+            removalPolicy: cdk.RemovalPolicy.DESTROY
         });
         new s3_deployment.BucketDeployment(this, 'ItemsBucketCSVUpload', {
             destinationBucket: s3Bucket,
@@ -97,7 +98,8 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
 
     private createCodeS3Bucket(): s3.IBucket {
         const s3Bucket = new s3.Bucket(this, 'CodeS3Bucket', {
-            bucketName: `${StackConfiguration.bucketNamePrefix}.code`
+            bucketName: `${StackConfiguration.bucketNamePrefix}.code`,
+            removalPolicy: cdk.RemovalPolicy.DESTROY
         });
         new s3_deployment.BucketDeployment(this, 'CodeUpload', {
             destinationBucket: s3Bucket,
