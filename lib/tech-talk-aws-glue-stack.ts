@@ -1,6 +1,10 @@
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as rds from '@aws-cdk/aws-rds';
+import * as s3 from '@aws-cdk/aws-s3';
+import * as s3_deployment from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
+import { StackConfiguration } from './configuration/stack-configuration';
+
 
 export class TechTalkAwsGlueStack extends cdk.Stack {
     constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -15,6 +19,8 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
 
         const mySqlDb = this.createDbInstance(vpc, dbSecurityGroup);
         mySqlDb.grantConnect(bastionHost);
+
+        const itemsS3Bucket = this.createItemsS3Bucket();
     }
 
     private createVpc(): ec2.IVpc {
@@ -69,5 +75,18 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
         });
         bastionHost.allowSshAccessFrom(ec2.Peer.anyIpv4()); // allow SSH connection to everyone
         return bastionHost;
+    }
+
+    private createItemsS3Bucket(): s3.IBucket {
+        const s3Bucket = new s3.Bucket(this, 'ItemsS3Bucket', {
+            bucketName: `${StackConfiguration.bucketNamePrefix}.items`
+        });
+        new s3_deployment.BucketDeployment(this, 'ItemsBucketCSVUpload', {
+            destinationBucket: s3Bucket,
+            sources: [
+                s3_deployment.Source.asset('csv')
+            ]
+        })
+        return s3Bucket;
     }
 }

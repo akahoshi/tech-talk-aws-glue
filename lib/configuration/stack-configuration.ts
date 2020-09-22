@@ -1,3 +1,4 @@
 export const StackConfiguration = {
-    stackName: 'TechTalkAwsGlueStack'
+    stackName: 'TechTalkAwsGlueStack',
+    bucketNamePrefix: 'tech.talk.aws.glue'
 }
