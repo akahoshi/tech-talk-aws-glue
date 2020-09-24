@@ -53,6 +53,7 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
             instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
             masterUsername: 'master',
+            masterUserPassword: new cdk.SecretValue('6QPb&Z#GDrS9pZ6*'),
             vpcSubnets: {
                 subnetType: ec2.SubnetType.ISOLATED
             },
@@ -132,6 +133,8 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             },
             role: glueRole.roleArn
         });
+
+        const dbConnection = 
 
         const itemsUploadEtlJob = new glue.CfnJob(this, 'ItemsUploadJob', {
             role: glueRole.roleArn,
