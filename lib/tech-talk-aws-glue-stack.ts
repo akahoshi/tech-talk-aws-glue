@@ -134,8 +134,6 @@ export class TechTalkAwsGlueStack extends cdk.Stack {
             role: glueRole.roleArn
         });
 
-        const dbConnection = 
-
         const itemsUploadEtlJob = new glue.CfnJob(this, 'ItemsUploadJob', {
             role: glueRole.roleArn,
             command: {
